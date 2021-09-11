@@ -69,7 +69,7 @@ def get_covid_info(user_input):
   index = get_similarity_index(similarity_list)
   index = index[1:]
 
-  print(similarity_list)
+  # print(similarity_list)
 
   for x in range(len(index)):
     if similarity_list[index[x]] > 0.0:
@@ -78,4 +78,4 @@ def get_covid_info(user_input):
 
   tokens.remove(user_input)
 
-  # return [ response ]
+  return [ response ]
