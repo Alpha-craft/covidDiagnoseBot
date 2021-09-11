@@ -12,7 +12,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory # https://github.com/har07/PySastrawi
 
-TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
+TOKEN = "1961647107:AAHEEm77I_b3OKuxWFbVfBDQeaP5YV6nzz8"
+# TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
 
 factory = StemmerFactory()
 stemmer = factory.create_stemmer()
