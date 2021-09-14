@@ -1,11 +1,11 @@
 import logging
-from aiogram.types import message
 import numpy
 import pandas
 import random
 import functions as func
 
 import aiogram.utils.markdown as md
+from aiogram.types import message
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
@@ -27,10 +27,10 @@ snt_list = pandas.read_csv("sentence.csv")
 
 # === INIT === #
 # Main token
-BOT_TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
+# BOT_TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
 
 # Develop token (don't touch, property milik mepopo)
-# BOT_TOKEN = "1961647107:AAHEEm77I_b3OKuxWFbVfBDQeaP5YV6nzz8"
+BOT_TOKEN = "1961647107:AAHEEm77I_b3OKuxWFbVfBDQeaP5YV6nzz8"
 
 logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
@@ -48,58 +48,61 @@ class Formulir(StatesGroup):
     pernahCovid = State()
 
 
-
 # === MAIN === #
 @dp.message_handler(commands=['start', 'help'])
 async def send_welcome(message: types.Message):
-	await message.reply("Ello")
+    inline_keyboard = types.InlineKeyboardMarkup(row_width=1)
 
-@dp.message_handler(commands='tems')
-async def start_cmd_handler(message: types.Message):
-    keyboard_markup = types.ReplyKeyboardMarkup(row_width=3)
-    # default row_width is 3, so here we can omit it actually
-    # kept for clearness
-
-    btns_text = ('Hayasaka Mei', 'Kanzaki Rio')
-    keyboard_markup.row(*(types.KeyboardButton(text) for text in btns_text))
-    # adds buttons as a new row to the existing keyboard
-    # the behaviour doesn't depend on row_width attribute
-
-    more_btns_text = (
-        "I don't know",
-        "Who am i?",
-        "Where am i?",
-        "Who is there?",
+    markup = (
+        ('Apa Itu Covid-19?', "0"),
+        ('Macam Varian Covid-19', "1"),
+        ('Jenis Treatment', "2"),
+        ('Pembatasan Pemerintah', "3"),
     )
-    keyboard_markup.add(*(types.KeyboardButton(text) for text in more_btns_text))
-    # adds buttons. New rows are formed according to row_width parameter
 
-    await message.reply("Choose dude", reply_markup=keyboard_markup)
+    keyboard_markup = (types.InlineKeyboardButton(text, callback_data=data) for text, data in markup)
+
+    inline_keyboard.add(*keyboard_markup)
+    inline_keyboard.add(types.InlineKeyboardButton('Informasi WHO', url='https://www.who.int/emergencies/diseases/novel-coronavirus-2019?gclid=EAIaIQobChMI0fvzzLfk8gIVS5JmAh2DKwniEAAYASAAEgLLBPD_BwE'))
+
+    await message.reply(func.add_respon([], "salam_normal")[0], reply_markup=inline_keyboard)
 
 
-# Use multiple registrators. Handler will execute when one of the filters is OK
-@dp.callback_query_handler(text='tems1')  # if cb.data == 'no'
-@dp.callback_query_handler(text='tems2')  # if cb.data == 'yes'
-async def inline_kb_answer_callback_handler(query: types.CallbackQuery):
-	answer_data = query.data
-	# always answer callback queries, even if you have nothing to say
-	await query.answer(f'You answered with {answer_data}')
+@dp.callback_query_handler(text="0")
+@dp.callback_query_handler(text="1")
+@dp.callback_query_handler(text="2")
+@dp.callback_query_handler(text="3")
+async def start_button(query: types.CallbackQuery):
+    answer_data = int(query.data)
+    await query.answer(f'Menampilkan hasil untuk: {query.message.reply_markup.inline_keyboard[answer_data][0].text}')
 
-	if answer_data == 'tems1':
-		text = 'ini tems 1!'
-	elif answer_data == 'tems2':
-		text = 'ini tems2'
-	else:
-		text = f'Unexpected callback data {answer_data}!'
-
-		# await bot.send_message(text)
-	await query.answer(text)
-	await query.answer(text, reply_markup=types.ReplyKeyboardRemove())
-		
+    if answer_data == 0:        
+        await bot.send_message(  
+            query.message.chat.id,
+            md.text(f"{md.bold('Virus Corona')} atau {md.bold('severe acute respiratory syndrome coronavirus 2')} (SARS-CoV-2) adalah virus yang menyerang sistem pernapasan. Penyakit karena infeksi virus ini disebut COVID-19. Virus Corona bisa menyebabkan gangguan ringan pada sistem pernapasan, infeksi paru-paru yang berat, hingga kematian."),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+    elif answer_data == 1:
+        await bot.send_message(  
+            query.message.chat.id,
+            md.text(f"{md.bold('Varian Alfa')} (B.1.1.7) yang pada awalnya ditemukan di Inggris sejak September 2020\n\n{md.bold('Varian Beta')} (B.1.351/B.1.351.2/B.1.351.3) yang pada awalnya ditemukan di Afrika Selatan sejak Mei 2020\n\n{md.bold('Varian Gamma')} (P.1/P.1.1/P.1.2) yang pada awalnya ditemukan di Brazil sejak November 2020\n\n{md.bold('Varian Delta')} (B.1.617.2/AY.1/AY.2/AY.3) yang pada awalnya ditemukan di India sejak Oktober 2020\n\n{md.bold('Varian Eta')} (B.1.525) yang penyebarannya ditemukan di banyak negara sejak Desember 2020\n\n{md.bold('Varian Iota')} (B.1526) yang pada awalnya ditemukan di Amerika sejak November 2020\n\n{md.bold('Varian Kappa')} (B.1617.1) yang pada awalnya ditemukan di India sejak Oktober 2020\n\n{md.bold('Varian Lamda')} (c.37) yang pada awalnya ditemukan di Peru sejak Desember 2020"),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+    elif answer_data == 2:
+        await bot.send_message(  
+            query.message.chat.id,
+            md.text(f"{md.bold('Rapid test')}, untuk mendeteksi antibodi (IgM dan IgG) yang diproduksi oleh tubuh untuk melawan virus Corona\n\n{md.bold('Rapid test antigen')}, untuk mendeteksi antigen yaitu protein yang ada di bagian terluar virus\n\n{md.bold('Swab test')} atau tes {md.bold('PCR')} (polymerase chain reaction), untuk mendeteksi virus Corona di dalam dahak\n\n{md.bold('CT scan atau Rontgen dada')}, untuk mendeteksi infiltrat atau cairan di paru-paru\n\nTes darah lengkap, untuk memeriksa kadar sel darah putih, D-dimer dan C-reactive protein"),
+            parse_mode=ParseMode.MARKDOWN,
+        )
+    elif answer_data == 3:
+		    await bot.send_message(  
+            query.message.chat.id,
+            f"• PSBB\n• PSBB Jawa Bali\n• PPKM Mikro\n• Penebalan PPKM Mikro\n• PPKM Darurat\n• PPKM Level 3-4",
+        )
 
 
 @dp.message_handler(commands='diagnosa')
-async def send_welcome(message: types.Message):
+async def formulir_start(message: types.Message):
     await Formulir.nama.set()
     await message.reply("Hai! siapa namamu?")
 
@@ -189,12 +192,6 @@ async def echo(message: types.Message):
     detected_intent = []
     pesan = message.text.lower()
     kata = pesan.split()
-
-    if btn_text == "Hayasaka Mei":
-		    reply_text = "Hayasaka Mei dayo"
-
-    await message.reply(reply_text, reply_markup=types.ReplyKeyboardRemove())
-    await message.reply()
 
     for item in snt_list.itertuples():                
         if stemmer.stem(item.Sentence) in pesan and item.Intent not in detected_intent:   
