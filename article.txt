@@ -1,4 +1,4 @@
-Penjelasan mengenai Covid 19 :
+Apa itu Covid 19?
 Virus Corona atau severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) adalah virus yang menyerang sistem pernapasan. Penyakit karena infeksi virus ini disebut COVID-19. Virus Corona bisa menyebabkan gangguan ringan pada sistem pernapasan, infeksi paru-paru yang berat, hingga kematian.
 
 
@@ -14,7 +14,7 @@ Virus corona bisa menimbulkan beragam gejala pada pengidapnya. Gejala yang muncu
 -tidak enak badan.
 
 
-Penyebaran
+Penyebaran Covid 19
 Penyebaran penyakit ini adalah melalui tetesan (droplet) pernapasan yang dikeluarkan oleh seseorang yang batuk. Risiko terkena COVID-19 dari seseorang yang tanpa memiliki gejala sama sekali sangat rendah. Namun demikian, banyak orang yang positif COVID-19 tetapi hanya mengalami gejala ringan. Hal ini terutama terjadi pada tahap awal penyakit. Karena itu sangat dimungkinkan untuk terdampak Covid 19 dari seseorang yang hanya batuk ringan dan tidak merasa sakit.
 
 
@@ -36,13 +36,13 @@ Varian Kappa (B.1617.1) yang pada awalnya ditemukan di India sejak Oktober 2020.
 Varian Lamda (c.37) yang pada awalnya ditemukan di Peru sejak Desember 2020.
 
 
-Rapid test berfungsi untuk mendeteksi antibodi (IgM dan IgG) yang diproduksi oleh tubuh untuk melawan virus Corona.
+Rapid test berfungsi untuk mendeteksi antibodi (IgM dan IgG) yang diproduksi oleh tubuh untuk melawan Virus Corona.
 
 
 Rapid test antigen berguna untuk mendeteksi antigen yaitu protein yang ada di bagian terluar virus.
 
 
-Swab test atau tes PCR (polymerase chain reaction) berguna untuk mendeteksi virus Corona di dalam dahak.
+Swab test atau tes PCR (polymerase chain reaction) berguna untuk mendeteksi Virus Corona di dalam dahak.
 
 
 CT scan atau Rontgen dada adalah metode untuk mendeteksi infiltrat atau cairan di paru-paru.

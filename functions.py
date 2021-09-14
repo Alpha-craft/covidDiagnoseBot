@@ -5,13 +5,18 @@ import random
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
+from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 
+sw_factory = StopWordRemoverFactory()
+# stopwords = sw_factory.get_stop_words()
+sw_remover = sw_factory.create_stop_word_remover()
 
-factory = StemmerFactory()
-stemmer = factory.create_stemmer()
+stemmer = StemmerFactory().create_stemmer()
 rsp_list = pandas.read_csv("response.csv")
 snt_list = pandas.read_csv("sentence.csv")
+syn_list = pandas.read_csv("sinonim.csv")
 
 
 
@@ -54,13 +59,23 @@ def get_similarity_index(lists):
   return list_index
 
 
-# to-do
+def synonymize(words):
+  sinonim_list = syn_list.to_records(index=False)
+  result = words.lower()
+
+  for sinonims in sinonim_list:
+    for item in str(sinonims[1]).split(','):
+      result = result.replace(item, f"{sinonims[0]} ", 1)    
+
+  return result
+
+
 def get_covid_info(user_input):
-  response = 'Maaf saya tidak paham perkataan anda'
+  response = None
   article = open("article.txt", "r")
 
   paragraph = article.read().split("\n\n\n")
-  tokens = [ stemmer.stem(token.lower()) for token in paragraph ]
+  tokens = [ stemmer.stem(sw_remover.remove(synonymize(token))) for token in paragraph ]
 
   tokens.append(user_input)
   vectorized = CountVectorizer().fit_transform(tokens)
@@ -72,7 +87,7 @@ def get_covid_info(user_input):
   # print(similarity_list)
 
   for x in range(len(index)):
-    if similarity_list[index[x]] > 0.0:
+    if similarity_list[index[x]] > 0.2:
       response = f"{paragraph[index[x]]}\n\n"
       break
 
