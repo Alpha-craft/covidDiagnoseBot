@@ -1,11 +1,9 @@
 import numpy
 import pandas
-import random
 import functions as func
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory # https://github.com/har07/PySastrawi
 
 
@@ -24,10 +22,7 @@ while active:
   inp = input(": ")
 
   # loop sentence list yang diconvert ke tuple
-  for item in snt_list.itertuples():    
-
-    # jika intent covid terdeteksi    
-
+  for item in snt_list.itertuples():      
     # jika stem dari sentence (kata dasar) dan intent belum ada di detected_intent..
     if stemmer.stem(item.Sentence) in inp and item.Intent not in detected_intent:   
       # jalankan function add response dan tambahkan intent kedalam detected_intent

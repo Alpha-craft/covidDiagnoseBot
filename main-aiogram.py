@@ -1,7 +1,6 @@
 import logging
 import numpy
 import pandas
-import random
 import functions as func
 
 import aiogram.utils.markdown as md
@@ -27,10 +26,10 @@ snt_list = pandas.read_csv("sentence.csv")
 
 # === INIT === #
 # Main token
-# BOT_TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
+BOT_TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
 
 # Develop token (don't touch, property milik mepopo)
-BOT_TOKEN = "1961647107:AAHEEm77I_b3OKuxWFbVfBDQeaP5YV6nzz8"
+# BOT_TOKEN = "1961647107:AAHEEm77I_b3OKuxWFbVfBDQeaP5YV6nzz8"
 
 logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
@@ -194,7 +193,7 @@ async def echo(message: types.Message):
     kata = pesan.split()
 
     for item in snt_list.itertuples():                
-        if stemmer.stem(item.Sentence) in pesan and item.Intent not in detected_intent:   
+        if stemmer.stem(item.Sentence) in stemmer.stem(pesan) and item.Intent not in detected_intent:   
             bot_respon = func.add_respon(bot_respon, item.Intent)
             detected_intent += [ item.Intent ]  
 
