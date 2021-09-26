@@ -2,6 +2,7 @@ import logging
 import numpy
 import pandas
 import functions as func
+import requests as req
 
 import aiogram.utils.markdown as md
 from aiogram.types import message
@@ -46,8 +47,13 @@ class Formulir(StatesGroup):
     penyakitDalam = State()
     pernahCovid = State()
 
+class Rujukan(StatesGroup):
+    select = State()
+
 
 # === MAIN === #
+
+# ======= Button Start ======= #
 @dp.message_handler(commands=['start', 'help'])
 async def send_welcome(message: types.Message):
     inline_keyboard = types.InlineKeyboardMarkup(row_width=1)
@@ -98,8 +104,11 @@ async def start_button(query: types.CallbackQuery):
             query.message.chat.id,
             f"• PSBB\n• PSBB Jawa Bali\n• PPKM Mikro\n• Penebalan PPKM Mikro\n• PPKM Darurat\n• PPKM Level 3-4",
         )
+# ======= Button End ======= #
 
 
+
+# ======= Diagnosa Start ======= #
 @dp.message_handler(commands='diagnosa')
 async def formulir_start(message: types.Message):
     await Formulir.nama.set()
@@ -146,20 +155,26 @@ async def handler_umur(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=Formulir.penyakitDalam)
 async def handler_penyakitDalam(message: types.Message, state: FSMContext):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+    markup.add("Iya", "Tidak")  
+
     if message.text.lower() in ["iya", "tidak"]:
         async with state.proxy() as data:
             data['penyakitDalam'] = message.text
         
-        await message.reply("Apakah anda pernah terjangkit Covid-19?")
+        await message.reply("Apakah anda pernah terjangkit Covid-19?", reply_markup=markup)
 
         await Formulir.next()
     else:
         await message.reply("Pilih salah satu dari opsi!")
-        await message.reply("Apakah anda mempunyai riwayat penyakit dalam?")
+        await message.reply("Apakah anda mempunyai riwayat penyakit dalam?", reply_markup=markup)
 
 
 @dp.message_handler(state=Formulir.pernahCovid)
 async def handler_pernahCovid(message: types.Message, state: FSMContext):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+    markup.add("Iya", "Tidak") 
+
     if message.text.lower() in ["iya", "tidak"]:
         async with state.proxy() as data:
             data['pernahCovid'] = message.text
@@ -178,11 +193,64 @@ async def handler_pernahCovid(message: types.Message, state: FSMContext):
                 reply_markup=markup,
                 parse_mode=ParseMode.MARKDOWN,
             )
+
+        await state.finish() # Formulir stop here..
     else:
         await message.reply("Pilih salah satu dari opsi!")
-        await message.reply("Apakah anda pernah terjangkit Covid-19?")
-    
-    await state.finish() # Formulir stop here..
+        await message.reply("Apakah anda pernah terjangkit Covid-19?", reply_markup=markup)        
+# ======= Diagnosa End ======= #
+
+
+
+# ======= RS Start ======= #
+@dp.message_handler(commands='rujukan')
+async def rujukan(message: types.Message):    
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+    for item in func.provinsi_indonesia:
+      markup.add(item)        
+
+    await message.reply("Pilihlah provinsi dimana kamu tinggal!", reply_markup=markup)
+    await Rujukan.select.set()
+
+@dp.message_handler(state=Rujukan.select)
+async def select_rs_rujukan(message: types.Message, state: FSMContext):  
+    rs_response = req.get("https://dekontaminasi.com/api/id/covid19/hospitals")
+    rs_lists = rs_response.json() 
+
+    if message.text.lower() in [x.lower() for x in func.provinsi_indonesia]:
+      async with state.proxy() as data:
+          result = md.text(md.bold(f'Daftar Rumah Sakit Rujukan Covid-19 di {message.text}:\n\n'))
+
+          for item in rs_lists:
+            if item['province'].lower() == message.text.lower():
+              result += md.text(
+                  md.text(md.bold(item['name'])),
+                  md.text(f"Alamat: {item['address']}"),
+                  md.text(f"No Telp: {md.bold(item['phone'])}"),
+                  md.text("\n"),
+                  sep='\n',
+              )
+      await message.reply(result.replace('\\', ''), reply_markup=types.ReplyKeyboardRemove(), parse_mode=ParseMode.MARKDOWN)      
+    else:
+      await message.reply("Tolong masukan salah satu provinsi di Indonesia!", reply_markup=types.ReplyKeyboardRemove())
+
+    await state.finish()
+# ======= RS End ======= #
+
+
+# ======= Covid-Stats Start ======= #
+@dp.message_handler(commands='statistik')
+async def stats_covid(message: types.Message):
+    img_url = func.get_covid_stats()
+    await message.reply("Sedang memuat data, mohon tunggu..")
+
+    if img_url is not False:
+        await message.reply(f"Berikut <a href='{img_url}'>ini</a> adalah statistik kasus covid 7 hari terakhir dan prediksi 3 hari kedepan", parse_mode=ParseMode.HTML)
+    else:
+        await message.reply("Ada gangguan pada server, tolong coba lain kali")
+# ======= Covid-Stats End ======= #
+
+
 
 
 @dp.message_handler()
@@ -192,11 +260,7 @@ async def echo(message: types.Message):
     pesan = message.text.lower()
     kata = pesan.split()
 
-    for item in snt_list.itertuples():                
-        if stemmer.stem(item.Sentence) in stemmer.stem(pesan) and item.Intent not in detected_intent:   
-            bot_respon = func.add_respon(bot_respon, item.Intent)
-            detected_intent += [ item.Intent ]  
-
+    func.get_responses(kata, detected_intent, bot_respon)      
     bot_respon += func.get_covid_info( stemmer.stem(func.synonymize(pesan)) )
 
     for item in bot_respon:
