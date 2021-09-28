@@ -52,6 +52,8 @@ def add_respon(responses, key):
   return responses
 
 
+
+
 def get_responses(words, intents, current_responses):
   for word in words:
       for sentence in snt_list.itertuples():                
@@ -92,6 +94,38 @@ def synonymize(words):
       result = result.replace(item, f"{sinonims[0]} ", 1)    
 
   return result
+
+
+def is_topcases_province(search):
+  get_province = requests.get("https://apicovid19indonesia-v2.vercel.app/api/indonesia/provinsi")
+  province = get_province.json()
+
+  topprovince = [x['provinsi'].lower() for x in province][:3]
+
+  if search.replace('Kep.', 'Kepulauan').lower() in topprovince:
+    return 1
+  else:
+    return 0
+
+
+def get_province_stats(search):
+  get_province = requests.get(f"https://apicovid19indonesia-v2.vercel.app/api/indonesia/provinsi?name={search.replace('Kep.', 'Kepulauan')}")
+  province = get_province.json()[0]
+
+  total = province['dirawat'] + province['meninggal'] + province['sembuh']
+  x = (province['dirawat'] / total) * 100
+  y = (province['meninggal'] / total) * 100
+  z = (province['sembuh'] / total) * 100
+
+  url = f"https://image-charts.com/chart?chco=9fc5e8|ef0d0d|8ef836&chd=t:{ x },{ y },{ z }&chs=700x500&cht=p3&chdl=dirawat|meninggal|sembuh&chma=0,0,40,0&chtt=Statistik covid { province['provinsi'] }&chts=000000,30&chl={ province['dirawat'] } Jiwa|{ province['meninggal'] } Jiwa|{ province['sembuh'] } Jiwa"
+
+  return {
+    "img_url": url, 
+    "kasus": province['kasus'], 
+    "dirawat": province['dirawat'], 
+    "meninggal": province['meninggal'], 
+    "sembuh": province['sembuh']
+  }
 
 
 def get_covid_info(user_input):
