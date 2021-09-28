@@ -329,6 +329,7 @@ async def handler_result(message: types.Message, state: FSMContext):
 
             await message.reply(f"Anda memiliki persentase {round(result, 1)}% terkena Covid-19", reply_markup=types.ReplyKeyboardRemove())
             await message.reply(txt, parse_mode=ParseMode.HTML)
+
         await state.finish()
     else:
         await message.reply("Pilih salah satu dari opsi!")
@@ -396,8 +397,12 @@ async def stats_covid(message: types.Message):
     referensi = "Referensi: \n-<a href='https://www.kaggle.com/chaudharijay2000/prediction-of-death-and-confirmed-cases-covid-19'>Prediksi covid</a>\n-<a href='https://devtrik.com/python/steeming-bahasa-indonesia-python-sastrawi/'>Sastrawi</a>"
     api = "Layanan API: -<a href='https://documentation.image-charts.com/'>Embed chart services</a>"
 
-    await message.reply(f"{txt}\n {sumberdata}\n\n{referensi}", parse_mode=ParseMode.HTML)
+    await message.reply(f"{txt}\n\n {sumberdata}\n\n{referensi}\n\n{api}", parse_mode=ParseMode.HTML)
 # ======= About End ======= #
+
+
+
+
 
 
 @dp.message_handler()
