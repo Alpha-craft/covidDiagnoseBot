@@ -38,3 +38,5 @@ while active:
 
   # untuk debug melihat intent
   # print(detected_intent)
+  # Oke Sip, Tanda Tangan Ahmad Rafli
+  
