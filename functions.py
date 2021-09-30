@@ -132,6 +132,11 @@ def get_covid_info(user_input):
   response = None
   article = open("article.txt", "r")
 
+  if len(user_input.split()) < 3:
+    min_similarity = 0.4
+  else:
+    min_similarity = 0.1
+
   paragraph = article.read().split("\n\n\n")
   tokens = [ stemmer.stem(sw_remover.remove(synonymize(token))) for token in paragraph ]
 
@@ -142,10 +147,10 @@ def get_covid_info(user_input):
   index = get_similarity_index(similarity_list)
   index = index[1:]
 
-  # print(similarity_list)
+  print(similarity_list)
 
   for x in range(len(index)):
-    if similarity_list[index[x]] > 0.2:
+    if similarity_list[index[x]] > min_similarity:
       response = f"{paragraph[index[x]]}\n\n"
       break
 

@@ -27,10 +27,10 @@ snt_list = pandas.read_csv("sentence.csv")
 
 # === INIT === #
 # Main token
-BOT_TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
+# BOT_TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
 
 # Develop token (don't touch, property milik mepopo)
-# BOT_TOKEN = "1961647107:AAHEEm77I_b3OKuxWFbVfBDQeaP5YV6nzz8"
+BOT_TOKEN = "1961647107:AAHEEm77I_b3OKuxWFbVfBDQeaP5YV6nzz8"
 
 logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
@@ -81,6 +81,7 @@ async def send_welcome(message: types.Message):
 
     inline_keyboard.add(*keyboard_markup)
     inline_keyboard.add(types.InlineKeyboardButton('Informasi WHO', url='https://www.who.int/emergencies/diseases/novel-coronavirus-2019?gclid=EAIaIQobChMI0fvzzLfk8gIVS5JmAh2DKwniEAAYASAAEgLLBPD_BwE'))
+    inline_keyboard.add(types.InlineKeyboardButton('Perintah Bot', callback_data='5'))
 
     await message.reply(func.add_respon([], "salam_normal")[0], reply_markup=inline_keyboard)
 
@@ -89,6 +90,7 @@ async def send_welcome(message: types.Message):
 @dp.callback_query_handler(text="1")
 @dp.callback_query_handler(text="2")
 @dp.callback_query_handler(text="3")
+@dp.callback_query_handler(text="5")
 async def start_button(query: types.CallbackQuery):
     answer_data = int(query.data)
     await query.answer(f'Menampilkan hasil untuk: {query.message.reply_markup.inline_keyboard[answer_data][0].text}')
@@ -116,6 +118,18 @@ async def start_button(query: types.CallbackQuery):
             query.message.chat.id,
             f"• PSBB\n• PSBB Jawa Bali\n• PPKM Mikro\n• Penebalan PPKM Mikro\n• PPKM Darurat\n• PPKM Level 3-4",
         )
+    elif answer_data == 5:
+        await bot.send_message(
+          query.message.chat.id, 
+          md.text(
+              md.text(f"Berikut adalah perintah yang dapat dieksekusi oleh bot"),
+              md.text(f"{md.bold('/rujukan')}\nuntuk melihat daftar rumah sakit untuk rujukan covid-19"),
+              md.text(f"{md.bold('/diagnosa')}\nuntuk melakukan self diagnose covid-19"),
+              md.text(f"{md.bold('/statistik')}\nmelihat statistik kasus covid-19 di Indonesia"),
+              sep='\n\n'
+          ),
+          parse_mode=ParseMode.MARKDOWN,
+        )     		    
 # ======= Button End ======= #
 
 
@@ -124,13 +138,13 @@ async def start_button(query: types.CallbackQuery):
 yesno = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
 yesno.add("Iya", "Tidak") 
 
-@dp.message_handler(commands='diagnosa')
+@dp.message_handler(commands=['diagnosa', 'diagnose'])
 async def formulir_start(message: types.Message):
     await Formulir.nama.set()
     await message.reply("Hai! siapa namamu?")
 
 
-@dp.message_handler(state='*', commands='batalkan') # bintang asterik (*) untuk selector all
+@dp.message_handler(state='*', commands=['batalkan', 'cancel', 'batal'])
 @dp.message_handler(Text(equals='batalkan', ignore_case=True), state='*')
 async def cancel_handler(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
@@ -340,7 +354,7 @@ async def handler_result(message: types.Message, state: FSMContext):
 
 
 # ======= RS Start ======= #
-@dp.message_handler(commands='rujukan')
+@dp.message_handler(commands=['rujukan', 'rs_rujukan', 'rs_covid'])
 async def rujukan(message: types.Message):    
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
     for item in func.provinsi_indonesia:
@@ -382,7 +396,7 @@ async def stats_covid(message: types.Message):
     img_url = func.get_covid_stats()    
 
     if img_url is not False:
-        await message.reply(f"Berikut <a href='{img_url}'>ini</a> adalah statistik kasus covid 7 hari terakhir dan prediksi 3 hari kedepan", parse_mode=ParseMode.HTML)
+        await message.reply(f"Berikut <a href='{img_url}'>ini</a> adalah statistik kasus covid-19 di Indonesia pada 7 hari terakhir dan prediksi 3 hari kedepan", parse_mode=ParseMode.HTML)
     else:
         await message.reply("Ada gangguan pada server, tolong coba lain kali")
 # ======= Covid-Stats End ======= #
@@ -412,8 +426,10 @@ async def echo(message: types.Message):
     pesan = message.text.lower()
     kata = pesan.split()
 
-    func.get_responses(kata, detected_intent, bot_respon)      
-    bot_respon += func.get_covid_info( stemmer.stem(func.synonymize(pesan)) )
+    func.get_responses(kata, detected_intent, bot_respon)
+
+    if len(kata) > 1:
+      bot_respon += func.get_covid_info( stemmer.stem(func.synonymize(pesan)) )
 
     for item in bot_respon:
         if item is not None:
