@@ -162,13 +162,13 @@ def get_covid_info(user_input):
 
 
 def get_covid_stats():
-  try:
+  try:      
       now = datetime.datetime.now(pytz.timezone('Asia/Jakarta'))
 
       head = []
       data = []
       start = ''
-      for x in range(1, 8):
+      for x in range(2, 9):
           timey = now - datetime.timedelta(days=x)
           d = timey.strftime('%d')
           m = timey.strftime('%B')
@@ -177,7 +177,7 @@ def get_covid_stats():
           get_covid = requests.get(f"https://apicovid19indonesia-v2.vercel.app/api/indonesia/provinsi/harian?year={y}&date={d}&month={m}")
           covid_info = get_covid.json() 
 
-          if x == 7:
+          if x == 8:
             start = timey.strftime('%d-%b')
 
           head += [ timey.strftime('%d-%b') ]
@@ -185,7 +185,7 @@ def get_covid_stats():
 
       confirmed = pandas.DataFrame([data], columns = head)
       dates = confirmed.keys()
-      cases = []
+      cases = []      
 
       for i in dates:
           cases.append(confirmed[i].sum())
@@ -202,18 +202,18 @@ def get_covid_stats():
       for i in range(len(future_forcast)):
           future_forcast_dates.append((start_date + datetime.timedelta(days=i)).strftime('%d-%b'))
 
-      X_train_confirmed, X_test_confirmed, y_train_confirmed, y_test_confirmed = train_test_split(days_since, cases, test_size=0.15, shuffle=False) 
+      X_train_confirmed, X_test_confirmed, y_train_confirmed, y_test_confirmed = train_test_split(days_since, cases, test_size=0.25, shuffle=False) 
 
       kernel = ['poly', 'sigmoid', 'rbf']
-      c = [0.01, 0.1, 1, 10]
-      gamma = [0.01, 0.1, 1]
-      epsilon = [0.01, 0.1, 1]
+      c = [0.1, 1, 10, 100]
+      gamma = [0.1, 1, 10]
+      epsilon = [0.1, 1, 10]
       shrinking = [True, False]
       svm_grid = {'kernel': kernel, 'C': c, 'gamma' : gamma, 'epsilon': epsilon, 'shrinking' : shrinking}
 
       svm = SVR()
-      svm_search = RandomizedSearchCV(svm, svm_grid, scoring='neg_mean_squared_error', cv=3, return_train_score=True, n_jobs=-1, n_iter=40, verbose=1)
-      svm_search.fit(X_train_confirmed, y_train_confirmed.ravel())
+      svm_search = RandomizedSearchCV(svm, svm_grid, scoring='neg_mean_squared_error', cv=3, return_train_score=True, n_jobs=-1, n_iter=50, verbose=1)
+      svm_search.fit(X_train_confirmed, y_train_confirmed.ravel())      
 
       svm_search.best_params_
 
@@ -229,6 +229,13 @@ def get_covid_stats():
       x = x.rstrip(',')
       y = y.rstrip(',')
 
-      return f"https://image-charts.com/chart?cht=lc&chd=a:|{ x }|{ y }&chdl=Prediksi|Positif&chxl=0:|{ '|'.join(future_forcast_dates) }|1:||1000|2500|5000|&chs=900x500&chco=3072F3,ff0000&chdlp=t&chls=2,4,1&chm=s,000000,0,-1,5|s,000000,1,-1,5&chxt=x,y"
+      url = f"https://image-charts.com/chart?cht=lc&chd=a:|{ x }|{ y }&chdl=Prediksi|Terkonfirmasi&chxl=0:|{ '|'.join(future_forcast_dates) }|1:||1000|2500|5000|&chs=900x500&chco=3072F3,ff0000&chdlp=t&chls=2,4,1&chm=s,000000,0,-1,5|s,000000,1,-1,5&chxt=x,y"
+
+      return {
+        "img_url": url,
+        "confirmed": cases, 
+        "prediction": svm_pred,
+        "date": future_forcast_dates        
+      }
   except:
       return False

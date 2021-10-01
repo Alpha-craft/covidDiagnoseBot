@@ -390,13 +390,22 @@ async def select_rs_rujukan(message: types.Message, state: FSMContext):
 
 
 # ======= Covid-Stats Start ======= #
-@dp.message_handler(commands='statistik')
+@dp.message_handler(commands=['statistik', 'statistic', 'statistics', 'stats'])
 async def stats_covid(message: types.Message):
     await message.reply("Sedang memuat data, mohon tunggu..")
-    img_url = func.get_covid_stats()    
+    stats = func.get_covid_stats()    
 
-    if img_url is not False:
-        await message.reply(f"Berikut <a href='{img_url}'>ini</a> adalah statistik kasus covid-19 di Indonesia pada 7 hari terakhir dan prediksi 3 hari kedepan", parse_mode=ParseMode.HTML)
+    if stats is not False:
+        col = ""
+        for i in range(0, 10):
+          col += f"""| {stats['date'][i]}  |     {round(stats['confirmed'][i][0]) if i < 6 else "...."}|      {round(stats['prediction'][i])}|\n"""
+          
+        tabel = f"""<pre>| Tanggal |  Kasus  | Prediksi |
+|---------|---------|----------|
+{col}</pre>"""
+
+        await message.reply(f"Berikut <a href='{stats['img_url']}'>ini</a> adalah statistik kasus covid-19 di Indonesia dari {stats['date'][0]} sampai 9 hari kedepan", parse_mode=ParseMode.HTML)
+        await message.reply(tabel, parse_mode=ParseMode.HTML)
     else:
         await message.reply("Ada gangguan pada server, tolong coba lain kali")
 # ======= Covid-Stats End ======= #
