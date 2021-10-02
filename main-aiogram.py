@@ -140,7 +140,7 @@ async def handler_nama(message: types.Message, state: FSMContext):
       txt = "Ini adalah bot informasi covid yang dibuat untuk keperluan project <a href='https://ipm.oreon.ai/'>Intel Prakarsa Muda</a>"
       sumberdata = "Sumber data:\n-<a href='https://github.com/Reynadi531/api-covid19-indonesia-v2'>Kasus Covid</a>\n-<a href='https://dekontaminasi.com/api/id/covid19/hospitals'>Daftar Rumah sakit rujukan covid</a>"
       referensi = "Referensi: \n-<a href='https://www.kaggle.com/chaudharijay2000/prediction-of-death-and-confirmed-cases-covid-19'>Prediksi covid</a>\n-<a href='https://devtrik.com/python/steeming-bahasa-indonesia-python-sastrawi/'>Sastrawi</a>"
-      api = "Layanan API: -<a href='https://documentation.image-charts.com/'>Embed chart services</a>"
+      api = "Layanan API: \n-<a href='https://documentation.image-charts.com/'>Embed chart services</a>"
 
       await message.reply(f"{txt}\n\n {sumberdata}\n\n{referensi}\n\n{api}", parse_mode=ParseMode.HTML)
 
