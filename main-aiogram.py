@@ -63,7 +63,7 @@ class Rujukan(StatesGroup):
     select = State()
 
 class Tentang(StatesGroup):
-    data = State()
+    x = State()
 
 
 # === MAIN === #
@@ -122,20 +122,20 @@ async def start_button(query: types.CallbackQuery):
             f"• PSBB\n• PSBB Jawa Bali\n• PPKM Mikro\n• Penebalan PPKM Mikro\n• PPKM Darurat\n• PPKM Level 3-4",
         )
     elif answer_data == 5:
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         markup.add("Tentang", "List Perintah", "Kembali")
 
-        await bot.send_message(query.message.chat.id, "Pilih Info apa yang anda ketahui mengenai bot", reply_markup=markup)
-
-        await Tentang.data.set()        		    
+        await Tentang.x.set()   
+        await bot.send_message(query.message.chat.id, "Pilih Info apa yang anda ketahui mengenai bot", reply_markup=markup)             		    
 # ======= Button End ======= #
 
 
 
 # ======= Tentang-Bot Start ======= #
-@dp.message_handler(state=Tentang.data)
-async def handler_nama(message: types.Message, state: FSMContext): 
+@dp.message_handler(state=Tentang.x)
+async def handler_about(message: types.Message, state: FSMContext): 
     data = message.text
+
     if data == "Tentang":
       txt = "Ini adalah bot informasi covid yang dibuat untuk keperluan project <a href='https://ipm.oreon.ai/'>Intel Prakarsa Muda</a>"
       sumberdata = "Sumber data:\n-<a href='https://github.com/Reynadi531/api-covid19-indonesia-v2'>Kasus Covid</a>\n-<a href='https://dekontaminasi.com/api/id/covid19/hospitals'>Daftar Rumah sakit rujukan covid</a>"
@@ -163,6 +163,12 @@ async def handler_nama(message: types.Message, state: FSMContext):
 
       await state.finish()
       await message.reply('Menutup Menu..', reply_markup=types.ReplyKeyboardRemove())
+  
+    else:
+      markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+      markup.add("Tentang", "List Perintah", "Kembali")
+
+      await message.reply('Pilih salah satu dari opsi', reply_markup=markup)
 # ======= Tentang-Bot Ends ======= #
 
 
