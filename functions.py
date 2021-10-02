@@ -209,12 +209,12 @@ def get_covid_stats():
       for i in range(len(future_forcast)):
           future_forcast_dates.append((start_date + datetime.timedelta(days=i)).strftime('%d-%b'))
 
-      X_train_confirmed, X_test_confirmed, y_train_confirmed, y_test_confirmed = train_test_split(days_since, cases, test_size=0.25, shuffle=False) 
+      X_train_confirmed, X_test_confirmed, y_train_confirmed, y_test_confirmed = train_test_split(days_since, cases, test_size=0.15, shuffle=False) 
 
       kernel = ['poly', 'sigmoid', 'rbf']
       c = [0.01, 0.1, 1, 10, 100]
-      gamma = [0.1, 1, 10]
-      epsilon = [0.1, 1, 10]
+      gamma = [0.01, 0.1, 10]
+      epsilon = [0.01, 0.1, 10]
       shrinking = [True, False]
       svm_parameters = {
         'kernel': kernel, 
@@ -225,7 +225,7 @@ def get_covid_stats():
       }
 
       svm = SVR()
-      svm_search = RandomizedSearchCV(svm, svm_parameters, scoring='neg_mean_squared_error', cv=3, return_train_score=True, n_jobs=-1, n_iter=50, verbose=1)  
+      svm_search = RandomizedSearchCV(svm, svm_parameters, scoring='neg_mean_squared_error', cv=3, return_train_score=True, n_jobs=1, n_iter=45, verbose=2)  
       svm_search.fit(X_train_confirmed, y_train_confirmed.ravel())
 
       svm_search.best_params_
@@ -242,7 +242,7 @@ def get_covid_stats():
       x = x.rstrip(',')
       y = y.rstrip(',')
 
-      url = f"https://image-charts.com/chart?cht=lc&chd=a:|{ x }|{ y }&chdl=Prediksi|Terkonfirmasi&chxl=0:|{ '|'.join(future_forcast_dates) }|1:||1000|2500|5000|&chs=900x500&chco=3072F3,ff0000&chdlp=t&chls=2,4,1&chm=s,000000,0,-1,5|s,000000,1,-1,5&chxt=x,y"
+      url = f"https://image-charts.com/chart?cht=lc&chd=a:|{ x }|{ y }&chdl=Prediksi|Terkonfirmasi&chxl=0:|{ '|'.join(future_forcast_dates) }|1:||1000|2000|3000|4000|5000|&chs=900x500&chco=3072F3,ff0000&chdlp=t&chls=2,4,1&chm=s,000000,0,-1,5|s,000000,1,-1,5&chxt=x,y"
 
       return {
         "img_url": url,
