@@ -27,10 +27,10 @@ snt_list = pandas.read_csv("sentence.csv")
 
 # === INIT === #
 # Main token
-# BOT_TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
+BOT_TOKEN = "1984425169:AAGHyd_rVPFz4vjHGdd6GBc428POodtjNT4"
 
 # Develop token (don't touch, property milik mepopo)
-BOT_TOKEN = "1961647107:AAHEEm77I_b3OKuxWFbVfBDQeaP5YV6nzz8"
+# BOT_TOKEN = "1961647107:AAHEEm77I_b3OKuxWFbVfBDQeaP5YV6nzz8"
 
 logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
@@ -62,6 +62,9 @@ class Formulir(StatesGroup):
 class Rujukan(StatesGroup):
     select = State()
 
+class Tentang(StatesGroup):
+    data = State()
+
 
 # === MAIN === #
 
@@ -81,7 +84,7 @@ async def send_welcome(message: types.Message):
 
     inline_keyboard.add(*keyboard_markup)
     inline_keyboard.add(types.InlineKeyboardButton('Informasi WHO', url='https://www.who.int/emergencies/diseases/novel-coronavirus-2019?gclid=EAIaIQobChMI0fvzzLfk8gIVS5JmAh2DKwniEAAYASAAEgLLBPD_BwE'))
-    inline_keyboard.add(types.InlineKeyboardButton('Perintah Bot', callback_data='5'))
+    inline_keyboard.add(types.InlineKeyboardButton('Mengenai Bot', callback_data='5'))
 
     await message.reply(func.add_respon([], "salam_normal")[0], reply_markup=inline_keyboard)
 
@@ -119,18 +122,48 @@ async def start_button(query: types.CallbackQuery):
             f"• PSBB\n• PSBB Jawa Bali\n• PPKM Mikro\n• Penebalan PPKM Mikro\n• PPKM Darurat\n• PPKM Level 3-4",
         )
     elif answer_data == 5:
-        await bot.send_message(
-          query.message.chat.id, 
-          md.text(
-              md.text(f"Berikut adalah perintah yang dapat dieksekusi oleh bot"),
-              md.text(f"{md.bold('/rujukan')}\nuntuk melihat daftar rumah sakit untuk rujukan covid-19"),
-              md.text(f"{md.bold('/diagnosa')}\nuntuk melakukan self diagnose covid-19"),
-              md.text(f"{md.bold('/statistik')}\nmelihat statistik kasus covid-19 di Indonesia"),
-              sep='\n\n'
-          ),
-          parse_mode=ParseMode.MARKDOWN,
-        )     		    
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, selective=True)
+        markup.add("Tentang", "List Perintah", "Kembali")
+
+        await bot.send_message(query.message.chat.id, "Pilih Info apa yang anda ketahui mengenai bot", reply_markup=markup)
+
+        await Tentang.data.set()        		    
 # ======= Button End ======= #
+
+
+
+# ======= Tentang-Bot Start ======= #
+@dp.message_handler(state=Tentang.data)
+async def handler_nama(message: types.Message, state: FSMContext): 
+    data = message.text
+    if data == "Tentang":
+      txt = "Ini adalah bot informasi covid yang dibuat untuk keperluan project <a href='https://ipm.oreon.ai/'>Intel Prakarsa Muda</a>"
+      sumberdata = "Sumber data:\n-<a href='https://github.com/Reynadi531/api-covid19-indonesia-v2'>Kasus Covid</a>\n-<a href='https://dekontaminasi.com/api/id/covid19/hospitals'>Daftar Rumah sakit rujukan covid</a>"
+      referensi = "Referensi: \n-<a href='https://www.kaggle.com/chaudharijay2000/prediction-of-death-and-confirmed-cases-covid-19'>Prediksi covid</a>\n-<a href='https://devtrik.com/python/steeming-bahasa-indonesia-python-sastrawi/'>Sastrawi</a>"
+      api = "Layanan API: -<a href='https://documentation.image-charts.com/'>Embed chart services</a>"
+
+      await message.reply(f"{txt}\n\n {sumberdata}\n\n{referensi}\n\n{api}", parse_mode=ParseMode.HTML)
+
+    elif data == "List Perintah":
+      await message.reply(
+        md.text(
+            md.text(f"Berikut adalah daftar perintah yang dapat dieksekusi oleh bot"),
+            md.text(f"{md.bold('/rujukan')}\nuntuk melihat daftar rumah sakit untuk rujukan covid-19"),
+            md.text(f"{md.bold('/diagnosa')}\nuntuk melakukan self diagnose covid-19"),
+            md.text(f"{md.bold('/statistik')}\nmelihat statistik kasus covid-19 di Indonesia"),
+            sep='\n\n'
+        ),
+        parse_mode=ParseMode.MARKDOWN,
+      )   
+
+    elif data == "Kembali":
+      current_state = await state.get_state()
+      if current_state is None:
+          return
+
+      await state.finish()
+      await message.reply('Menutup Menu..', reply_markup=types.ReplyKeyboardRemove())
+# ======= Tentang-Bot Ends ======= #
 
 
 
@@ -398,7 +431,7 @@ async def stats_covid(message: types.Message):
     if stats is not False:
         col = ""
         for i in range(0, 10):
-          col += f"""| {stats['date'][i]}  |     {round(stats['confirmed'][i][0]) if i < 6 else "...."}|      {round(stats['prediction'][i])}|\n"""
+          col += f"""| {stats['date'][i]}  |     {round(stats['confirmed'][i][0]) if i < 7 else "...."}|      {round(stats['prediction'][i])}|\n"""
           
         tabel = f"""<pre>| Tanggal |  Kasus  | Prediksi |
 |---------|---------|----------|
@@ -409,19 +442,6 @@ async def stats_covid(message: types.Message):
     else:
         await message.reply("Ada gangguan pada server, tolong coba lain kali")
 # ======= Covid-Stats End ======= #
-
-
-
-# ======= About Start ======= #
-@dp.message_handler(commands='about')
-async def stats_covid(message: types.Message):
-    txt = "Ini adalah bot informasi covid yang dibuat untuk keperluan project <a href='https://ipm.oreon.ai/'>Intel Prakarsa Muda</a>"
-    sumberdata = "Sumber data:\n-<a href='https://github.com/Reynadi531/api-covid19-indonesia-v2'>Kasus Covid</a>\n-<a href='https://dekontaminasi.com/api/id/covid19/hospitals'>Daftar Rumah sakit rujukan covid</a>"
-    referensi = "Referensi: \n-<a href='https://www.kaggle.com/chaudharijay2000/prediction-of-death-and-confirmed-cases-covid-19'>Prediksi covid</a>\n-<a href='https://devtrik.com/python/steeming-bahasa-indonesia-python-sastrawi/'>Sastrawi</a>"
-    api = "Layanan API: -<a href='https://documentation.image-charts.com/'>Embed chart services</a>"
-
-    await message.reply(f"{txt}\n\n {sumberdata}\n\n{referensi}\n\n{api}", parse_mode=ParseMode.HTML)
-# ======= About End ======= #
 
 
 

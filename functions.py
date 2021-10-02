@@ -1,3 +1,7 @@
+# https://github.com/Reynadi531/vaksincovid19-api
+# https://github.com/Reynadi531/api-covid19-indonesia-v2
+# https://dekontaminasi.com/api/id/covid19/hospitals
+
 import numpy
 import pandas
 import random
@@ -13,6 +17,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.model_selection import RandomizedSearchCV, train_test_split
 from sklearn.svm import SVR
 from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.model_selection import GridSearchCV
 
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
@@ -25,7 +30,6 @@ provinsi_indonesia = (
 )  
 
 sw_factory = StopWordRemoverFactory()
-# stopwords = sw_factory.get_stop_words()
 sw_remover = sw_factory.create_stop_word_remover()
 
 stemmer = StemmerFactory().create_stemmer()
@@ -147,7 +151,7 @@ def get_covid_info(user_input):
   index = get_similarity_index(similarity_list)
   index = index[1:]
 
-  print(similarity_list)
+  # print(similarity_list)
 
   for x in range(len(index)):
     if similarity_list[index[x]] > min_similarity:
@@ -168,16 +172,19 @@ def get_covid_stats():
       head = []
       data = []
       start = ''
-      for x in range(2, 9):
-          timey = now - datetime.timedelta(days=x)
+
+      lastweek = now - datetime.timedelta(days=now.weekday(), weeks=1)
+
+      for x in range(0, 7):
+          timey = lastweek + datetime.timedelta(days=x)
           d = timey.strftime('%d')
           m = timey.strftime('%B')
           y = timey.strftime('%Y')
 
-          get_covid = requests.get(f"https://apicovid19indonesia-v2.vercel.app/api/indonesia/provinsi/harian?year={y}&date={d}&month={m}")
+          get_covid = requests.get(f"https://apicovid19indonesia-v2.vercel.app/api/indonesia/provinsi/harian?year={y}&date={d}&month={m}")      
           covid_info = get_covid.json() 
-
-          if x == 8:
+      
+          if x == 0:
             start = timey.strftime('%d-%b')
 
           head += [ timey.strftime('%d-%b') ]
@@ -205,15 +212,21 @@ def get_covid_stats():
       X_train_confirmed, X_test_confirmed, y_train_confirmed, y_test_confirmed = train_test_split(days_since, cases, test_size=0.25, shuffle=False) 
 
       kernel = ['poly', 'sigmoid', 'rbf']
-      c = [0.1, 1, 10, 100]
+      c = [0.01, 0.1, 1, 10, 100]
       gamma = [0.1, 1, 10]
       epsilon = [0.1, 1, 10]
       shrinking = [True, False]
-      svm_grid = {'kernel': kernel, 'C': c, 'gamma' : gamma, 'epsilon': epsilon, 'shrinking' : shrinking}
+      svm_parameters = {
+        'kernel': kernel, 
+        'C': c, 
+        'gamma' : gamma, 
+        'epsilon': epsilon, 
+        'shrinking' : shrinking
+      }
 
       svm = SVR()
-      svm_search = RandomizedSearchCV(svm, svm_grid, scoring='neg_mean_squared_error', cv=3, return_train_score=True, n_jobs=-1, n_iter=50, verbose=1)
-      svm_search.fit(X_train_confirmed, y_train_confirmed.ravel())      
+      svm_search = RandomizedSearchCV(svm, svm_parameters, scoring='neg_mean_squared_error', cv=3, return_train_score=True, n_jobs=-1, n_iter=50, verbose=1)  
+      svm_search.fit(X_train_confirmed, y_train_confirmed.ravel())
 
       svm_search.best_params_
 
