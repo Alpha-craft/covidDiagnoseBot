@@ -11,6 +11,7 @@ import datetime
 import operator
 import requests
 import pytz
+import pickle
 
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -139,10 +140,10 @@ def get_covid_info(user_input):
   if len(user_input.split()) < 3:
     min_similarity = 0.4
   else:
-    min_similarity = 0.1
+    min_similarity = 0.2
 
   paragraph = article.read().split("\n\n\n")
-  tokens = [ stemmer.stem(sw_remover.remove(synonymize(token))) for token in paragraph ]
+  tokens = [ stemmer.stem(sw_remover.remove(synonymize(token))).replace("virus", "") for token in paragraph ]
 
   tokens.append(user_input)
   vectorized = CountVectorizer().fit_transform(tokens)
@@ -227,6 +228,9 @@ def get_covid_stats():
       svm = SVR()
       svm_search = RandomizedSearchCV(svm, svm_parameters, scoring='neg_mean_squared_error', cv=3, return_train_score=True, n_jobs=1, n_iter=45, verbose=2)  
       svm_search.fit(X_train_confirmed, y_train_confirmed.ravel())
+
+      # with open('model.pkl','wb') as f:
+      #   pickle.dump(svm_search, f)
 
       svm_search.best_params_
 
